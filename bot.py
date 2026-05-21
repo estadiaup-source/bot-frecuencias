@@ -1,6 +1,6 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
-    ApplicationBuilder,
+    Application,
     CommandHandler,
     MessageHandler,
     filters,
@@ -11,12 +11,19 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
+import os
+import json
+
 # ====================================
 # FIREBASE
 # ====================================
 
+firebase_json = os.getenv(
+    "FIREBASE_CREDENTIALS"
+)
+
 cred = credentials.Certificate(
-    "inventario-y-estatus-firebase-adminsdk-fbsvc-3bebc5b92a.json"
+    json.loads(firebase_json)
 )
 
 firebase_admin.initialize_app(cred)
@@ -27,9 +34,8 @@ db = firestore.client()
 # TOKEN BOT
 # ====================================
 
-import os
-
 TOKEN = os.getenv("BOT_TOKEN")
+
 # ====================================
 # ESTADOS
 # ====================================
@@ -56,19 +62,13 @@ async def start(
     ]
 
     reply_markup = ReplyKeyboardMarkup(
-
         teclado,
-
         resize_keyboard=True,
-
     )
 
     await update.message.reply_text(
-
         "👋 Bienvenido al sistema CFE",
-
         reply_markup=reply_markup,
-
     )
 
 # ====================================
@@ -103,19 +103,13 @@ async def mensajes(
         ]
 
         reply_markup = ReplyKeyboardMarkup(
-
             teclado,
-
             resize_keyboard=True,
-
         )
 
         await update.message.reply_text(
-
             "👋 Sesión finalizada",
-
             reply_markup=reply_markup,
-
         )
 
         return
@@ -165,21 +159,14 @@ async def mensajes(
         ]
 
         reply_markup = ReplyKeyboardMarkup(
-
             teclado,
-
             resize_keyboard=True,
-
             one_time_keyboard=True,
-
         )
 
         await update.message.reply_text(
-
             "📡 Selecciona zona:",
-
             reply_markup=reply_markup,
-
         )
 
         return
@@ -225,21 +212,14 @@ async def mensajes(
                 ]
 
                 reply_markup = ReplyKeyboardMarkup(
-
                     teclado,
-
                     resize_keyboard=True,
-
                     one_time_keyboard=True,
-
                 )
 
                 await update.message.reply_text(
-
                     "📦 Estado:",
-
                     reply_markup=reply_markup,
-
                 )
 
                 return
@@ -321,19 +301,13 @@ async def mensajes(
                 ]
 
                 reply_markup = ReplyKeyboardMarkup(
-
                     teclado,
-
                     resize_keyboard=True,
-
                 )
 
                 await update.message.reply_text(
-
                     "✅ Equipo agregado correctamente",
-
                     reply_markup=reply_markup,
-
                 )
 
                 del usuarios_estado[chat_id]
@@ -440,19 +414,13 @@ async def mensajes(
                 ]
 
                 reply_markup = ReplyKeyboardMarkup(
-
                     teclado,
-
                     resize_keyboard=True,
-
                 )
 
                 await update.message.reply_text(
-
                     "✅ Frecuencia agregada correctamente",
-
                     reply_markup=reply_markup,
-
                 )
 
                 del usuarios_estado[chat_id]
@@ -463,23 +431,24 @@ async def mensajes(
 # APP
 # ====================================
 
-app = ApplicationBuilder().token(
+app = Application.builder().token(
     TOKEN
 ).build()
 
 app.add_handler(
-    CommandHandler("start", start)
-)
-
-app = Application.builder().token(TOKEN).build()
-
-app.add_handler(
-    MessageHandler(
-        filters.ALL,
-        manejar_mensaje,
+    CommandHandler(
+        "start",
+        start,
     )
 )
 
-print("Bot activo...")
+app.add_handler(
+    MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        mensajes,
+    )
+)
+
+print("🔥 Bot activo...")
 
 app.run_polling()
