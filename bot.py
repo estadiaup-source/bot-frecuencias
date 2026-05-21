@@ -29,11 +29,7 @@ db = firestore.client()
 
 import os
 
-TOKEN =
-    os.getenv(
-        "BOT_TOKEN",
-    )
-
+TOKEN = os.getenv("BOT_TOKEN")
 # ====================================
 # ESTADOS
 # ====================================
