@@ -471,15 +471,15 @@ app.add_handler(
     CommandHandler("start", start)
 )
 
+app = Application.builder().token(TOKEN).build()
+
 app.add_handler(
-
     MessageHandler(
-        filters.TEXT,
-        mensajes,
+        filters.ALL,
+        manejar_mensaje,
     )
-
 )
 
-print("BOT ACTIVO 🚀")
+print("Bot activo...")
 
 app.run_polling()
